@@ -1,0 +1,30 @@
+{
+  "name": "@robinrs/energy-storagejs",
+  "version": "0.0.1",
+  "description": "Interaction with energy storage systems from popular brands (/cgi/ems_data.js)",
+  "license": "MIT",
+  "repository": "robinrs/energy-storagejs",
+  "main": "index.js",
+  "author": {
+    "name": "Robin Schleser",
+    "url": "https://github.com/RobinRS"
+  },
+  "keywords": [
+    "energy",
+    "battery",
+    "storage",
+    "ems_data.js",
+    "ems_data.xml",
+    "energy storage"
+  ],
+  "scripts": {
+    "test": "jest tests"
+  },
+  "devDependencies": {
+    "jest": "^29.5.0"
+  },
+  "dependencies": {
+    "node-fetch": "^2.6.11",
+    "xml-js": "^1.6.11"
+  }
+}
