@@ -1,6 +1,6 @@
 {
   "name": "@robinrs/energy-storagejs",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Interaction with energy storage systems from popular brands (/cgi/ems_data.js)",
   "license": "MIT",
   "repository": "robinrs/energy-storagejs",
