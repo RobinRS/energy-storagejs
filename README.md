@@ -17,6 +17,7 @@ npm install @robinrs/energy-storagejs
 ## Usage
 
 ```javascript
+
 // Access API Class Object
 const battery = energyStorage({
   ip: "192.168.2.130",
