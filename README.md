@@ -2,6 +2,8 @@
 
 [![npm version](https://badge.fury.io/js/%40robinrs%2Fenergy-storagejs.svg)](https://badge.fury.io/js/%40robinrs%2Fenergy-storagejs)
 
+`energy-storagejs` is a powerful JavaScript library designed to simplify the process of accessing and retrieving data from energy storage systems. Its intuitive API enables seamless interaction with VARTA Storage Systems, allowing users to effortlessly access various battery-related information. Whether you need to retrieve real-time battery status, historical performance data, or other system-specific details, energy-storagejs provides a straightforward and efficient solution for integrating energy storage functionality into your JavaScript applications.
+
 `energy-storagejs` is a JavaScript library for accessing and retrieving data from energy storage systems. It provides an API for interacting with VARTA Storage Systems and retrieving battery-related information.
 
 ## Installation
@@ -17,11 +19,11 @@ npm install @robinrs/energy-storagejs
 ```javascript
 // Access API Class Object
 const battery = energyStorage({
-  ip: '192.168.2.130',
-  fullRequest: '/cgi/ems_data.js',
-  simpleRequest: '/cgi/ems_data.xml',
-  paramsRequest: '/cgi/ems_conf.js',
-  type: 'v', // Type for VARTA Storage Systems
+  ip: "192.168.2.130",
+  fullRequest: "/cgi/ems_data.js",
+  simpleRequest: "/cgi/ems_data.xml",
+  paramsRequest: "/cgi/ems_conf.js",
+  type: "v", // Type for VARTA Storage Systems
 });
 
 // Request the data from the Battery
