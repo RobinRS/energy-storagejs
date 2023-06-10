@@ -1,4 +1,4 @@
-const energyStorage = require('./../index')
+const energyStorage = require('../index')
 
 const battery = energyStorage({
   ip: '0.0.0.0',

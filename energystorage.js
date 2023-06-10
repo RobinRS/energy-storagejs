@@ -22,16 +22,19 @@ class EnergyStorage {
     }
   }
 
-  requestFull () {
-    this.__simple = false
+  async requestFull () {
+    if (this.opts.type === 'v') {
+      this.__rawConfig = await this._requestV_ems_confjs()
+      this.__rawData = await this._requestV_ems_datajs()
+      this.__simple = false
+    }
   }
 
   parse () {
     if (this.__rawData === null) throw new TypeError("requestFull/requestSimple must be called atleast once");
-    if (this.__simple && this.opts.type === 'v') {
-      this.__data = this._parseV_ems_dataxml()
+    if (this.opts.type === 'v') {
+      this.__data = (this.__simple ? this._parseV_ems_dataxml() : this._parseV_ems_datajs())
     }
-    console.log(this.__data)
   }
 
   getTimeStamp () {
@@ -62,12 +65,33 @@ class EnergyStorage {
     return this.__data.data.percentage
   }
 
+  getData () {
+    return this.__data
+  }
+
+  getGridPower () {
+    if (this.__simple) throw new TypeError("For this battery gridpower is only supported on full request, help here to improve https://github.com/RobinRS/energy-storagejs");
+    if (this.opts.type === "v") {
+      const c = this.__data.rawData.EMETER_Data
+      this.__data.data.gridpower = Math.round((c.U_V_L1 * c.Iw_V_L1 + c.U_V_L2 * c.Iw_V_L2 + c.U_V_L3 * c.Iw_V_L3) / 100)
+    }
+    return this.__data.data.gridpower
+  }
+
   _translateV_state () {
     return { 0: 'Busy', 1: 'Active', 2: 'Charging', 3: 'Discharging', 4: 'Standby', 5: 'Error', 6: 'Service/Update', 7: 'Emergencymode' }
   }
 
-  async _requestV_ems_datajs () {
+  async _requestV_ems_confjs () {
+    const request = await fetch(`http://${this.opts.ip}${this.opts.paramsRequest}`)
+    const response = await request.text()
+    return response
+  }
 
+  async _requestV_ems_datajs () {
+    const request = await fetch(`http://${this.opts.ip}${this.opts.fullRequest}`)
+    const response = await request.text()
+    return response
   }
 
   async _requestV_ems_dataxml () {
@@ -98,6 +122,63 @@ class EnergyStorage {
       powerInverterF: (data.rawData.P) + "W"
     }
     return data
+  }
+
+  _parseV_ems_datajs () {
+    const data = {}
+
+    const configData = this.__rawConfig.replace(/\n/g, "").split(";")
+    this.__config = {}
+    for (const cfg of configData) {
+      const keyVal = cfg.split(" = ")
+      this.__config[keyVal[0]] = eval(keyVal[1])
+    }
+
+    const rawdata = this.__rawData.replace(/\n/g, "").split(";")
+    const rawdatax = {}
+
+    for (const cfg of rawdata) {
+      const keyVal = cfg.split(" = ")
+      rawdatax[keyVal[0]] = eval(keyVal[1])
+    }
+
+    // Inverter Data
+    data['WR_Data'] = {}
+    for (let i = 0; i < rawdatax['WR_Data'].length; i++) {
+      data['WR_Data'][this.__config['WR_Conf'][i]] = rawdatax['WR_Data'][i]
+    }
+
+    // Energy Meter Data
+    data['EMETER_Data'] = {}
+    for (let i = 0; i < rawdatax['EMETER_Data'].length; i++) {
+      data['EMETER_Data'][this.__config['EMeter_Conf'][i]] = rawdatax['EMETER_Data'][i]
+    }
+
+    // ENS Data
+    data['ENS_Data'] = {}
+    for (let i = 0; i < rawdatax['ENS_Data'].length; i++) {
+      data['ENS_Data'][this.__config['ENS_Conf'][i]] = rawdatax['ENS_Data'][i]
+    }
+
+    // Charger/Charger-Modules
+    data['Charger_Data'] = {}
+    for (let i = 0; i < rawdatax['Charger_Data'].length; i++) {
+      data['Charger_Data'][i] = {}
+      for (let x = 0; x < rawdatax['Charger_Data'][i].length; x++) {
+        data['Charger_Data'][i][this.__config['Charger_Conf'][x]] = rawdatax['Charger_Data'][i][x]
+        if (this.__config['Charger_Conf'][x] == 'BattData') {
+          data['Charger_Data'][i][this.__config['Charger_Conf'][x]] = {}
+          for (let y = 0; y < rawdatax['Charger_Data'][i][x].length; y++) {
+            data['Charger_Data'][i][this.__config['Charger_Conf'][x]][this.__config['Batt_Conf'][y]] = rawdatax['Charger_Data'][i][x][y]
+            // TODO: Implement Charger Battery Module Information
+            /*if (this.__config['Batt_Conf'][y] === 'ModulData') {
+              data['Charger_Data'][i][this.__config['Charger_Conf'][x]][this.__config['Batt_Conf'][y]] = {}
+            }*/
+          }
+        }
+      }
+    }
+    return { rawData: data, data: {} }
   }
 
   _rawData () {
